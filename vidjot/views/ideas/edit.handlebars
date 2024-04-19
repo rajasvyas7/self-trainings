@@ -1,0 +1,20 @@
+<div class="card card-body">
+  <h3>Edit Video Idea</h3>
+  {{#each errors}}
+  <div class="alert alert-danger">{{text}}</div>
+  {{else}}
+  {{/each}}
+  {{!-- <form action="/ideas/edit/{{idea._id}}?_mehtod=PUT" method="post"> --}}
+  <form action="/ideas/update/{{idea._id}}" method="post">
+    {{!-- <input type="hidden" name="_method" value="PUT" /> --}}
+    <div class="form-group mb-3">
+      <label for="title">Title</label>
+      <input type="text" class="form-control" name="title" required value="{{idea.title}}"/> 
+    </div>
+    <div class="form-group mb-3">
+      <label for="details">Details</label>
+      <textarea class="form-control" name="details" required>{{idea.details}}</textarea> 
+    </div>
+    <button type="submit" class="btn btn-primary">Update</button>
+  </form>
+</div>
