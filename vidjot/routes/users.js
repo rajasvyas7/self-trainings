@@ -8,6 +8,10 @@ router.get('/login', (req, resp) => {
   UserController.login(req, resp);
 });
 
+router.post('/login', (req, resp, next) => {
+  UserController.authenticate(req, resp, next);
+});
+
 router.get('/register', (req, resp) => {
   UserController.register(req, resp);
 });

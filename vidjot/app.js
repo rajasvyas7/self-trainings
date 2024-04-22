@@ -6,9 +6,12 @@ const methodOverride = require('method-override');
 const session = require('express-session');
 const flash = require('connect-flash');
 const path = require('path');
+const passport = require('passport');
 
 const ideasRoutes = require('./routes/ideas');
 const usersRoutes = require('./routes/users')
+
+require('./config/passport')(passport);
 
 const app = express();
 
@@ -35,6 +38,9 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }));
+//passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 //flash middleware 
 app.use(flash()); 
@@ -47,6 +53,7 @@ app.use((request, response, next) => {
   response.locals.success_msg = request.flash('success_msg');
   response.locals.error_msg = request.flash('error_msg');
   response.locals.error = request.flash('error');
+  response.locals.user = request.user || null;
   next();
 });
 

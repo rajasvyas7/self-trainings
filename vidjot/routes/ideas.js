@@ -76,8 +76,9 @@ router.put('/:id', (request, response) => {
 router.get('/', (request, response) => {
   Idea.find({}).lean().sort({date: 'desc'})
     .then(ideas => {
+      console.log('redirected to ideas list');
       // console.log('ideas', ideas, ideas[0]._id.toString());
-      response.render('ideas/list', {list: ideas, http: JSON.stringify(this.http)});    
+      response.render('ideas/list', {list: ideas});    
     });
 });
 
