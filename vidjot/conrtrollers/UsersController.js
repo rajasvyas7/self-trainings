@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { request } = require('express');
 
 require('../models/Users');
 const User = mongoose.model('users');
@@ -19,9 +20,24 @@ module.exports = {
       errors.push({ text: `Password must be at least 5 chars long.` });
     }
 
-    if (req.body.password !== req.body.confirmPassword) {
+    if (errors.length == 0 && req.body.password !== req.body.confirmPassword) {
       errors.push({ text: `Password does not match.` });
     }
+
+    // ADD A CHECK FOR DUPLICATE EMAIL IDS
+    // if (errors.length == 0) {
+    //   User.findOne({email: request.body.email}).
+    //   then((user) => {
+    //     if (user) {
+
+    //     }
+    //     else {
+
+    //     }
+    //   })
+    // }
+
+    
 
     if (errors.length > 0) {
       console.log('registration errors:', errors);
