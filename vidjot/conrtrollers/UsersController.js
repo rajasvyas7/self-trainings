@@ -82,5 +82,18 @@ module.exports = {
       failureRedirect: '/users/login',
       failureFlash: true
     })(req, resp, next);
+  },
+
+  logout: (req, resp, next) => {
+    req.logout((err) => {
+        if (err) {
+          return next(err);
+        }
+        else {
+          req.flash('success_msg', 'You are successfully logged out!');
+          resp.redirect('/');
+        }
+      });
+
   }
 }

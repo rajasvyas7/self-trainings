@@ -20,4 +20,8 @@ router.post('/register', (req, resp) => {
   UserController.createUser(req, resp);
 });
 
+router.get('/logout', (req, resp, next) => {
+  UserController.logout(req, resp, next);
+});
+
 module.exports = router;
