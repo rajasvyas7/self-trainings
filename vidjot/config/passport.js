@@ -38,8 +38,8 @@ module.exports = function(passport) {
     console.log('DeserializeUser called', id);
     User.findById(id)
       .then((user, err) => {
-        console.log('deserialise error', err);
-        console.log('deserialise user', user);
+        // console.log('deserialise error', err);
+        // console.log('deserialise user', user);
         return done(err, user);
       }); 
   })

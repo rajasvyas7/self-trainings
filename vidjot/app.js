@@ -10,13 +10,14 @@ const passport = require('passport');
 
 const ideasRoutes = require('./routes/ideas');
 const usersRoutes = require('./routes/users')
+const db = require('./config/database');
 
 require('./config/passport')(passport);
 
 const app = express();
 
 //DB connection
-mongoose.connect('mongodb://localhost:27017/vidjot-dev')
+mongoose.connect(db.mongoURI)
   .then(() => console.log('MongoDB connected!'))
   .catch(err => console.log(err));
 
@@ -72,7 +73,7 @@ app.get('/about', (request, response) => {
   response.render("about");
 });
 
-const port = 7000;
+const port = process.env.PORT || 7000;
 app.listen(port, () => {
   console.log(`Node server running on port #${port}`);
 });

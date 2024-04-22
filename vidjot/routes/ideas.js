@@ -1,5 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { ensureAuthenticated } = require('../helpers/auth');
+const { ObjectId } = require('mongodb');
 
 const router = express.Router();
 //Fetching Ideas model
@@ -7,30 +9,38 @@ require('../models/Ideas');
 const Idea = mongoose.model('ideas');
 
 //loadd Idea create form
-router.get('/add', (request, response) => {
+router.get('/add', ensureAuthenticated, (request, response) => {
   response.render("ideas/add");
 });
 
 // render form to edit Idea
-router.get('/edit/:id', (request, response) => {
-  Idea.findById(request.params.id).lean()
+router.get('/edit/:id', ensureAuthenticated, (request, response) => {
+  let qry = { _id: new ObjectId(request.params.id), createdBy: request.user.email }
+  Idea.findOne(qry).lean()
     .then(idea => {
-      // console.log('idea', idea);
-      response.render("ideas/edit", {
-        idea: idea
-      });
+      if (idea) {
+        // console.log('idea', idea);
+        response.render("ideas/edit", {
+          idea: idea
+        });
+      }
+      else {
+        request.flash('error_msg', 'No data found');
+        response.redirect('/ideas');
+      }
+
     });
-  
+
 });
 
 //Process form to create Idea
-router.post('/', (request, response) => {
+router.post('/', ensureAuthenticated, (request, response) => {
   let errors = [];
-  if(!request.body.title) {
-    errors.push({text: 'Please add title'});
+  if (!request.body.title) {
+    errors.push({ text: 'Please add title' });
   }
-  if(!request.body.details) {
-    errors.push({text: 'Please add details'});
+  if (!request.body.details) {
+    errors.push({ text: 'Please add details' });
   }
 
   if (errors.length > 0) {
@@ -43,7 +53,8 @@ router.post('/', (request, response) => {
   else {
     let data = {
       title: request.body.title,
-      details: request.body.details
+      details: request.body.details,
+      createdBy: request.user.email
     }
     new Idea(data).save()
       .then((idea) => {
@@ -56,38 +67,57 @@ router.post('/', (request, response) => {
 
 // Update an idea
 // app.post('/ideas/update/:id', (request, response) => {
-router.put('/:id', (request, response) => {
-  console.log('params', request.params);
+router.put('/:id', ensureAuthenticated, (request, response) => {
+  // console.log('params', request.params);
   const id = request.params.id
   const data = {
     title: request.body.title,
-    details: request.body.details
+    details: request.body.details,
+    updatedBy: request.user.email
   }
-  console.log('data', data);
-  Idea.findByIdAndUpdate(id, data, {returnDocument: 'after', lean: true})
-    .then((idea) => {
-      request.flash('success_msg', `Video Idea - ${idea.title} has been updated successfully!`);
-      response.redirect('/ideas')
+  const qry = { _id: new ObjectId(id), createdBy: request.user.email };
+  // console.log('update qry', qry);
+  // console.log('data', data);
+  Idea.findOneAndUpdate(qry, data, { returnDocument: 'after', lean: true })
+    .then((idea, err) => {
+      if (err) { console.log('updation error', err) }
+      // console.log('idea updated ->', idea);
+      if (idea) {
+        request.flash('success_msg', `Video Idea - ${idea.title} has been updated successfully!`);
+        response.redirect('/ideas')
+      }
+      else {
+        request.flash('error_msg', `Invalid request`);
+        response.redirect('/ideas')
+      }
+
     });
-  // response.send('Jhumritallaiya!')
 });
 
 // List Ideas
-router.get('/', (request, response) => {
-  Idea.find({}).lean().sort({date: 'desc'})
+router.get('/', ensureAuthenticated, (request, response) => {
+  console.log('req.user', request.user);
+  const query = { createdBy: request.user.email }
+  Idea.find(query).lean().sort({ date: 'desc' })
     .then(ideas => {
       console.log('redirected to ideas list');
       // console.log('ideas', ideas, ideas[0]._id.toString());
-      response.render('ideas/list', {list: ideas});    
+      response.render('ideas/list', { list: ideas });
     });
 });
 
 //Delete an Idea
-router.delete('/:id', (request, response) => {
-  console.log(`Deleting ${request.params.id}`);
-  Idea.findByIdAndDelete(request.params.id)
+router.delete('/:id', ensureAuthenticated, (request, response) => {
+  // console.log(`Deleting ${request.params.id}`);
+  let qry = { _id: new ObjectId(request.params.id), createdBy: request.user.email }
+  Idea.findOneAndDelete(qry)
     .then((idea) => {
-      request.flash('success_msg', 'Video Idea deleted successfully!');
+      if (idea) {
+        request.flash('success_msg', 'Video Idea deleted successfully!');
+      }
+      else {
+        request.flash('error_msg', 'Invalid!');
+      }
       response.redirect('/ideas');
     });
 });
